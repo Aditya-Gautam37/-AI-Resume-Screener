@@ -32,3 +32,5 @@ plotly
 
 torch
 torchvision
+
+faiss-cpu
