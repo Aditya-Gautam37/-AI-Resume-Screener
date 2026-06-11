@@ -1,0 +1,30 @@
+# Core NLP & ML
+spacy
+sentence-transformers
+torch
+
+# Vector Database
+chromadb
+
+# Document Processing
+PyPDF2
+pdfplumber
+python-docx
+
+# Data Processing
+numpy
+pandas
+scikit-learn
+
+# Utilities
+python-dotenv
+tqdm
+loguru
+
+# Testing
+pytest
+pytest-cov
+
+# Visualization (optional)
+matplotlib
+seaborn

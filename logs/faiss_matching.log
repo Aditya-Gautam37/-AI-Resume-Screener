@@ -1,0 +1,16 @@
+2026-06-10 21:50:35.241 | INFO     | src.embeddings.embedding_generator:__init__:14 - Loading model all-MiniLM-L6-v2 on cpu
+2026-06-10 21:50:43.131 | INFO     | src.embeddings.embedding_generator:__init__:17 - Model loaded successfully. Embedding dimension: 384
+2026-06-10 21:50:43.162 | INFO     | src.embeddings.faiss_store:_load_or_create_index:50 - Loaded existing index with 1 resumes
+2026-06-10 21:50:43.162 | INFO     | src.embeddings.faiss_store:__init__:35 - FAISS store initialized with dimension 384
+2026-06-10 21:54:13.301 | INFO     | src.embeddings.embedding_generator:__init__:14 - Loading model all-MiniLM-L6-v2 on cpu
+2026-06-10 21:54:20.416 | INFO     | src.embeddings.embedding_generator:__init__:17 - Model loaded successfully. Embedding dimension: 384
+2026-06-10 21:54:20.417 | INFO     | src.embeddings.faiss_store:_load_or_create_index:50 - Loaded existing index with 1 resumes
+2026-06-10 21:54:20.417 | INFO     | src.embeddings.faiss_store:__init__:35 - FAISS store initialized with dimension 384
+2026-06-10 21:54:20.419 | INFO     | src.embeddings.embedding_generator:generate_embeddings:21 - Generating embeddings for 1 texts
+2026-06-10 21:54:20.475 | INFO     | src.embeddings.embedding_generator:generate_embeddings:32 - Generated embeddings shape: (1, 384)
+2026-06-10 21:55:33.568 | INFO     | src.embeddings.embedding_generator:__init__:14 - Loading model all-MiniLM-L6-v2 on cpu
+2026-06-10 21:55:41.988 | INFO     | src.embeddings.embedding_generator:__init__:17 - Model loaded successfully. Embedding dimension: 384
+2026-06-10 21:55:41.988 | INFO     | src.embeddings.faiss_store:_load_or_create_index:50 - Loaded existing index with 1 resumes
+2026-06-10 21:55:41.988 | INFO     | src.embeddings.faiss_store:__init__:35 - FAISS store initialized with dimension 384
+2026-06-10 21:55:41.988 | INFO     | src.embeddings.embedding_generator:generate_embeddings:21 - Generating embeddings for 1 texts
+2026-06-10 21:55:42.045 | INFO     | src.embeddings.embedding_generator:generate_embeddings:32 - Generated embeddings shape: (1, 384)

@@ -1,0 +1,23 @@
+JOB TITLE: Senior Software Engineer
+
+REQUIRED SKILLS:
+- Python programming
+- SQL database management
+- AWS cloud services
+- Docker and Kubernetes
+- React or Angular
+
+REQUIREMENTS:
+- 5+ years of software development experience
+- Bachelor's degree in Computer Science or related field
+- Strong problem-solving skills
+
+RESPONSIBILITIES:
+- Design and implement scalable web applications
+- Lead technical projects and mentor junior developers
+- Collaborate with cross-functional teams
+
+BENEFITS:
+- Competitive salary
+- Remote work options
+- Health insurance
