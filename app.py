@@ -900,10 +900,10 @@ def main():
 
 
 if __name__ == "__main__":
-"""
-AI Resume Screener - Complete Streamlit UI with Fixed Weights
-Skills 35% | Location 10% | Experience 10% | Qualification 25% | Job Title 20%
-"""
+    """
+    AI Resume Screener - Complete Streamlit UI with Fixed Weights
+    Skills 35% | Location 10% | Experience 10% | Qualification 25% | Job Title 20%
+    """
 
 import streamlit as st
 import pandas as pd
