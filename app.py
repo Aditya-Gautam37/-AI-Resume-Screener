@@ -11,7 +11,7 @@ from difflib import SequenceMatcher
 from typing import Dict, List, Tuple, Optional
 import io
 
-# ── Document text extraction ──
+# ── Document extraction libraries ──
 try:
     import PyPDF2
 except ImportError:
@@ -34,10 +34,229 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ──────────── CSS styling (unchanged, omitted for brevity, but keep your existing CSS) ────────────
+# ──────────── CSS styling (dark theme) ──────────────────────────────────────
 st.markdown("""
 <style>
-    ... (your existing CSS from previous version, keep as is) ...
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+    .stApp { background: #111318; color: #d4d8e0; }
+
+    [data-testid="stSidebar"] {
+        background: #16181f !important;
+        border-right: 1px solid #252830;
+    }
+    [data-testid="stSidebar"] * { color: #b0b6c2 !important; }
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] h4 { color: #d4d8e0 !important; font-weight: 600; }
+
+    .stButton > button {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.875rem !important;
+        font-weight: 500 !important;
+        border-radius: 6px !important;
+        padding: 0.45rem 1.1rem !important;
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease !important;
+    }
+    .stButton > button[kind="primary"] {
+        background: #2c5282 !important;
+        color: #e8edf5 !important;
+        border: 1px solid #2c5282 !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+        background: #2a4a75 !important;
+        border-color: #2a4a75 !important;
+        color: #ffffff !important;
+    }
+    .stButton > button[kind="secondary"],
+    .stButton > button:not([kind]) {
+        background: #1e2028 !important;
+        color: #9aa0ad !important;
+        border: 1px solid #2e3140 !important;
+    }
+    .stButton > button[kind="secondary"]:hover,
+    .stButton > button:not([kind]):hover {
+        background: #252830 !important;
+        color: #d4d8e0 !important;
+        border-color: #3c4153 !important;
+    }
+
+    .main-header {
+        font-size: 1.9rem;
+        font-weight: 700;
+        color: #d4d8e0;
+        text-align: center;
+        margin-bottom: 0.25rem;
+        letter-spacing: -0.3px;
+    }
+    .sub-header {
+        font-size: 0.85rem;
+        color: #5c6270;
+        text-align: center;
+        margin-bottom: 2rem;
+        letter-spacing: 0.2px;
+    }
+
+    .match-score-high {
+        background: #1a2e1a;
+        border: 1px solid #2d5a2d;
+        padding: 0.45rem 1rem;
+        border-radius: 6px;
+        color: #6abf6a;
+        font-weight: 700;
+        text-align: center;
+        font-size: 1.5rem;
+    }
+    .match-score-medium {
+        background: #2a2410;
+        border: 1px solid #5a4a10;
+        padding: 0.45rem 1rem;
+        border-radius: 6px;
+        color: #c9a84c;
+        font-weight: 700;
+        text-align: center;
+        font-size: 1.5rem;
+    }
+    .match-score-low {
+        background: #2a1414;
+        border: 1px solid #5a2020;
+        padding: 0.45rem 1rem;
+        border-radius: 6px;
+        color: #c06060;
+        font-weight: 700;
+        text-align: center;
+        font-size: 1.5rem;
+    }
+
+    .skill-badge {
+        background: #1e2028;
+        border: 1px solid #2e3140;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        color: #8a9ab5;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-block;
+        margin: 0.1rem;
+    }
+
+    .weight-card {
+        background: #16181f;
+        border: 1px solid #252830;
+        border-top: 2px solid #2c5282;
+        padding: 0.8rem 0.5rem;
+        border-radius: 8px;
+        text-align: center;
+        color: #d4d8e0;
+    }
+
+    .component-card {
+        padding: 0.9rem 0.6rem;
+        border-radius: 8px;
+        text-align: center;
+        background: #16181f;
+        border: 1px solid #252830;
+        color: #d4d8e0;
+    }
+    .contribution-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        display: inline-block;
+        margin-top: 0.35rem;
+        background: #1e2028;
+        border: 1px solid #2e3140;
+        color: #8a9ab5;
+    }
+
+    .candidate-card {
+        background: #16181f;
+        border: 1px solid #252830;
+        border-radius: 10px;
+        padding: 1.4rem 1.6rem 1rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .section-label {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #4a5060;
+        margin-bottom: 0.5rem;
+    }
+
+    .rank-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #1e2028;
+        border: 1px solid #2e3140;
+        color: #8a9ab5;
+        font-weight: 700;
+        font-size: 0.8rem;
+        margin-right: 0.5rem;
+        flex-shrink: 0;
+    }
+    .rank-name {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #d4d8e0;
+    }
+
+    .stProgress > div > div { background: #1e2028 !important; border-radius: 3px; }
+    .stProgress > div > div > div > div { background: #2c5282 !important; border-radius: 3px; }
+
+    .stTabs [data-baseweb="tab-list"] {
+        background: #16181f;
+        border-radius: 8px;
+        padding: 0.25rem;
+        border: 1px solid #252830;
+        gap: 0.25rem;
+    }
+    .stTabs [data-baseweb="tab"] {
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: 6px;
+        color: #5c6270;
+        padding: 0.35rem 0.9rem;
+    }
+    .stTabs [aria-selected="true"] {
+        background: #1e2028 !important;
+        color: #d4d8e0 !important;
+    }
+
+    [data-testid="stExpander"] {
+        background: #16181f;
+        border: 1px solid #252830 !important;
+        border-radius: 8px;
+    }
+    [data-testid="stExpander"] summary { color: #5c6270; font-size: 0.875rem; }
+
+    [data-testid="stMetricValue"] { color: #8a9ab5 !important; font-size: 1.6rem !important; }
+    [data-testid="stMetricLabel"] { color: #4a5060 !important; }
+
+    .stAlert { border-radius: 6px !important; }
+    hr { border-color: #1e2028 !important; }
+
+    [data-testid="stFileUploader"] {
+        background: #16181f !important;
+        border: 1px dashed #252830 !important;
+        border-radius: 8px !important;
+    }
+
+    [data-testid="stSlider"] .rc-slider-rail { background: #252830; }
+    [data-testid="stSlider"] .rc-slider-track { background: #2c5282; }
+    [data-testid="stSlider"] .rc-slider-handle { border-color: #2c5282; background: #2c5282; }
+
+    table { color: #d4d8e0 !important; }
+    thead tr th { color: #5c6270 !important; border-bottom: 1px solid #252830 !important; }
+    tbody tr td { border-color: #1e2028 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -63,6 +282,7 @@ FIXED_WEIGHTS = {
     'job_title': 0.20
 }
 
+# ── Model initialisation ──
 @st.cache_resource
 def init_models():
     with st.spinner("Loading AI models..."):
@@ -72,10 +292,10 @@ def init_models():
         vector_store = FAISSVectorStore(dimension=dimension, persist_path="./data/embeddings/streamlit_faiss")
         return parser, embedder, vector_store
 
-# ─── Text extraction helpers ────────────────────────────────────────────────
+# ─── Text extraction helpers (PDF, DOCX, TXT) ───────────────────────────────
 def extract_text_from_pdf(file_bytes: bytes) -> str:
     if PyPDF2 is None:
-        raise ImportError("PyPDF2 not installed. Please install it: pip install PyPDF2")
+        raise ImportError("PyPDF2 not installed. Run: pip install PyPDF2")
     try:
         reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
         text = " ".join([page.extract_text() or "" for page in reader.pages])
@@ -86,7 +306,7 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
 
 def extract_text_from_docx(file_bytes: bytes) -> str:
     if docx is None:
-        raise ImportError("python-docx not installed. Please install it: pip install python-docx")
+        raise ImportError("python-docx not installed. Run: pip install python-docx")
     try:
         document = docx.Document(io.BytesIO(file_bytes))
         text = " ".join([para.text for para in document.paragraphs])
@@ -96,20 +316,19 @@ def extract_text_from_docx(file_bytes: bytes) -> str:
         return ""
 
 def extract_text_from_uploaded_file(uploaded_file) -> str:
-    """Extract text from .txt, .pdf, or .docx file"""
     file_bytes = uploaded_file.getvalue()
-    file_name = uploaded_file.name.lower()
-    if file_name.endswith('.txt'):
+    name = uploaded_file.name.lower()
+    if name.endswith('.txt'):
         return file_bytes.decode('utf-8', errors='ignore')
-    elif file_name.endswith('.pdf'):
+    elif name.endswith('.pdf'):
         return extract_text_from_pdf(file_bytes)
-    elif file_name.endswith('.docx'):
+    elif name.endswith('.docx'):
         return extract_text_from_docx(file_bytes)
     else:
         st.warning(f"Unsupported file type: {uploaded_file.name}")
         return ""
 
-# ─── Feature extraction functions (unchanged from your working version) ────
+# ─── Feature extraction (skills, location, qualification, job titles) ───────
 def extract_skills_from_text(text: str) -> List[str]:
     skill_keywords = [
         'python', 'java', 'javascript', 'sql', 'aws', 'docker', 'kubernetes',
@@ -223,7 +442,7 @@ def calculate_qualification_match(resume_education: List[str], jd_qual_level: in
         return min(1.0, resume_level / jd_qual_level)
     return 0.7 if resume_level >= 3 else 0.5
 
-# ─── Processing functions (updated to use text extraction) ──────────────────
+# ─── Processing functions (use the text extractors) ─────────────────────────
 def process_resumes(uploaded_files) -> int:
     parser = st.session_state.parser
     with st.spinner(f"Processing {len(uploaded_files)} resumes..."):
@@ -278,21 +497,6 @@ def process_jd(uploaded_files) -> int:
             st.error(f"Error processing {file.name}: {str(e)}")
     return len(st.session_state.jd_data)
 
-# ─── Embedding, matching, UI functions (unchanged from your working version) ───
-# ... (insert all the remaining functions: generate_embeddings, calculate_weighted_match,
-#      match_resume_to_jd, get_score_color, get_score_emoji, display_matches, main)
-#      Keep exactly as they were in your previous working version, but ensure they use the updated process functions.
-
-# To avoid duplication, I will now provide the rest of the code (everything from generate_embeddings onward)
-# that you already have working. Since the file is very long, I will copy the remaining part from your last
-# correct version (the one without PDF support) and paste it here. But to save space, I'll assume you
-# have it. In practice, you should replace your entire app.py with the final version below.
-
-# ──────────────────────────────────────────────────────────────────────────────
-# The functions below are the same as your previous working version.
-# I include them for completeness (but you can reuse your existing implementations).
-# ──────────────────────────────────────────────────────────────────────────────
-
 def generate_embeddings() -> bool:
     if not st.session_state.resume_data:
         st.warning("No resumes to process")
@@ -319,6 +523,7 @@ def generate_embeddings() -> bool:
     st.session_state.embeddings_generated = True
     return True
 
+# ─── Weighted matching ──────────────────────────────────────────────────────
 def calculate_weighted_match(jd_info, resume_info, resume_metadata, semantic_score, weights):
     scores = {}
     jd_skills = set(jd_info['required_skills'])
@@ -390,21 +595,190 @@ def get_score_emoji(score: float) -> str:
     elif score >= 0.5: return "→"
     return "↓"
 
+# ─── Display matches (full cards) ───────────────────────────────────────────
 def display_matches(matches, min_score, jd_info, weights):
-    # Use your existing display_matches function (the one you already have)
-    # I'll keep it minimal here, but you should copy your full working version.
     if not matches:
         st.info("No matches found.")
         return
+
     matches = [m for m in matches if m['final_score'] >= min_score]
     if not matches:
         st.warning(f"No candidates above {min_score*100:.0f}% match score.")
         return
-    st.success(f"{len(matches)} candidate{'s' if len(matches) != 1 else ''} matched")
-    # ... (rest of your display code)
-    # For brevity, I assume you will paste your existing display_matches function here.
 
-# The main() function remains the same except the file uploader accepts multiple types.
+    st.success(f"{len(matches)} candidate{'s' if len(matches) != 1 else ''} matched")
+
+    components = [
+        ('skills',        '🎯 Skills'),
+        ('location',      '📍 Location'),
+        ('experience',    '📅 Experience'),
+        ('qualification', '🎓 Qualification'),
+        ('job_title',     '💼 Job Title'),
+    ]
+
+    for i, match in enumerate(matches, 1):
+        score = match['final_score']
+        score_class = get_score_color(score)
+        direction = get_score_emoji(score)
+
+        st.markdown('<div class="candidate-card">', unsafe_allow_html=True)
+
+        col1, col2, col3 = st.columns([2, 1, 1])
+        with col1:
+            st.markdown(
+                f'<span class="rank-badge">{i}</span>'
+                f'<span class="rank-name">{match["resume_name"]}</span>',
+                unsafe_allow_html=True
+            )
+        with col2:
+            st.markdown(f'<div class="{score_class}">{direction} {score*100:.1f}%</div>', unsafe_allow_html=True)
+            st.caption("Overall match")
+        with col3:
+            st.markdown(
+                f'<div style="background:#1e2028;border:1px solid #2e3140;border-radius:6px;'
+                f'padding:0.4rem 0.8rem;text-align:center;">'
+                f'<div style="color:#4a5060;font-size:0.7rem;margin-bottom:2px;">SEMANTIC</div>'
+                f'<div style="font-size:1.3rem;font-weight:700;color:#8a9ab5;">'
+                f'{match["semantic_score"]*100:.0f}%</div></div>',
+                unsafe_allow_html=True
+            )
+
+        st.divider()
+
+        # Score breakdown (progress bars)
+        st.markdown('<div class="section-label">Score breakdown</div>', unsafe_allow_html=True)
+        for comp_key, comp_name in components:
+            comp_score = match['scores'][comp_key] * 100
+            weight = weights[comp_key] * 100
+            contribution = match['contributions'][comp_key]
+            col_a, col_b = st.columns([3, 1])
+            with col_a:
+                st.markdown(
+                    f'<span style="font-size:0.82rem;font-weight:500;color:#b0b6c2;">{comp_name}</span>'
+                    f'<span style="font-size:0.72rem;color:#4a5060;margin-left:0.4rem;">({weight:.0f}% weight)</span>',
+                    unsafe_allow_html=True
+                )
+                st.progress(comp_score / 100, text=f"{comp_score:.0f}%")
+            with col_b:
+                st.markdown(
+                    f'<div style="text-align:right;padding-top:1.3rem;">'
+                    f'<span class="contribution-badge">+{contribution:.1f}%</span></div>',
+                    unsafe_allow_html=True
+                )
+
+        st.divider()
+
+        # At a glance cards
+        st.markdown('<div class="section-label">At a glance</div>', unsafe_allow_html=True)
+        cols = st.columns(5)
+        for idx, (comp_key, comp_name) in enumerate(components):
+            with cols[idx]:
+                comp_score = match['scores'][comp_key] * 100
+                weight = weights[comp_key] * 100
+                contribution = match['contributions'][comp_key]
+                st.markdown(f"""
+                <div class="component-card">
+                    <div style="font-size:0.72rem;color:#4a5060;margin-bottom:0.25rem;">{comp_name}</div>
+                    <div style="font-size:1.4rem;font-weight:700;color:#8a9ab5;">{comp_score:.0f}%</div>
+                    <div style="font-size:0.68rem;color:#3a4050;margin-top:0.1rem;">wt {weight:.0f}%</div>
+                    <div class="contribution-badge">+{contribution:.1f}%</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.divider()
+
+        # Matched skills
+        if match['matched_skills']:
+            st.markdown('<div class="section-label">Matched skills</div>', unsafe_allow_html=True)
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                badges = " ".join([f'<span class="skill-badge">{s}</span>' for s in match['matched_skills'][:8]])
+                st.markdown(badges, unsafe_allow_html=True)
+            with col2:
+                skills_score = match['scores']['skills'] * 100
+                skills_contribution = match['contributions']['skills']
+                st.markdown(
+                    f'<div style="background:#1e2028;border:1px solid #2e3140;border-radius:6px;'
+                    f'padding:0.6rem;text-align:center;margin-top:0.1rem;">'
+                    f'<div style="font-size:0.7rem;color:#4a5060;">Skills match</div>'
+                    f'<div style="font-size:1.1rem;font-weight:700;color:#8a9ab5;">{skills_score:.0f}%</div>'
+                    f'<div style="font-size:0.7rem;color:#4a5060;">+{skills_contribution:.1f}% to total</div>'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
+
+        # Requirements comparison
+        st.markdown('<div class="section-label" style="margin-top:0.8rem;">Requirements comparison</div>', unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1:
+            exp_score = match['scores']['experience'] * 100
+            exp_contribution = match['contributions']['experience']
+            st.markdown(f"""
+            **📅 Experience**
+            - Required: {jd_info.get('required_experience', 0)} years
+            - Candidate: {match['resume_experience']} years
+            - Match: {exp_score:.0f}% → Adds {exp_contribution:.1f}%
+            """)
+            loc_score = match['scores']['location'] * 100
+            loc_contribution = match['contributions']['location']
+            st.markdown(f"""
+            **📍 Location**
+            - Required: {jd_info.get('location', 'Not specified').title()}
+            - Candidate: {match['resume_location'].title()}
+            - Match: {loc_score:.0f}% → Adds {loc_contribution:.1f}%
+            """)
+        with col2:
+            qual_score = match['scores']['qualification'] * 100
+            qual_contribution = match['contributions']['qualification']
+            st.markdown(f"""
+            **🎓 Qualification**
+            - Required: {jd_info.get('required_qualification', 'Bachelor')}
+            - Candidate: {', '.join(match['resume_education'][:2]) if match['resume_education'] else 'Not specified'}
+            - Match: {qual_score:.0f}% → Adds {qual_contribution:.1f}%
+            """)
+            title_score = match['scores']['job_title'] * 100
+            title_contribution = match['contributions']['job_title']
+            st.markdown(f"""
+            **💼 Job Title**
+            - Required: {jd_info.get('job_titles', ['Not specified'])[0].title()}
+            - Candidate: {match['resume_job_titles'][0].title() if match['resume_job_titles'] else 'Not specified'}
+            - Match: {title_score:.0f}% → Adds {title_contribution:.1f}%
+            """)
+
+        # Expandable details
+        with st.expander("📐 Score calculation details"):
+            st.markdown("**Total Score = Σ (Component Score × Weight)**")
+            st.markdown("| Component | Score | Weight | Contribution |")
+            st.markdown("|-----------|-------|--------|--------------|")
+            for comp_key, comp_name in components:
+                comp_score = match['scores'][comp_key] * 100
+                weight = weights[comp_key] * 100
+                contribution = match['contributions'][comp_key]
+                st.markdown(f"| {comp_name} | {comp_score:.0f}% | {weight:.0f}% | **+{contribution:.1f}%** |")
+            st.markdown("---")
+            st.markdown("*Example: Skills 86% × 35% = +30.1% contribution*")
+
+        with st.expander("📄 Full candidate profile"):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown(f"**Name:** {match['resume_name']}")
+                st.markdown(f"**Email:** {match.get('email', 'N/A')}")
+                st.markdown(f"**Phone:** {match.get('phone', 'N/A')}")
+                st.markdown(f"**Location:** {match['resume_location'].title()}")
+            with col2:
+                st.markdown(f"**Experience:** {match['resume_experience']} years")
+                st.markdown(f"**Education:** {', '.join(match['resume_education'][:3]) if match['resume_education'] else 'N/A'}")
+                st.markdown(f"**Job Titles:** {', '.join(match.get('resume_job_titles', [])[:3])}")
+            st.markdown("**All Skills:**")
+            skill_cols = st.columns(4)
+            for idx, skill in enumerate(match['resume_skills'][:20]):
+                with skill_cols[idx % 4]:
+                    st.markdown(f"- {skill}")
+
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("")
+
+# ─── Main UI ────────────────────────────────────────────────────────────────
 def main():
     st.markdown('<h1 class="main-header">AI Resume Screener</h1>', unsafe_allow_html=True)
     st.markdown('<p class="sub-header">Weighted matching — Skills 35% · Qualification 25% · Job Title 20% · Location 10% · Experience 10%</p>', unsafe_allow_html=True)
@@ -438,6 +812,7 @@ def main():
                 st.success(f"Processed {count} job descriptions")
 
         st.divider()
+
         col1, col2 = st.columns(2)
         with col1:
             st.metric("Resumes", len(st.session_state.resume_data))
@@ -453,6 +828,7 @@ def main():
             st.success("✓ Embeddings ready")
 
         st.divider()
+
         if st.button("Clear All Data", use_container_width=True):
             st.session_state.resume_data = {}
             st.session_state.jd_data = {}
@@ -470,6 +846,7 @@ def main():
         st.warning("Click **Generate Embeddings** in the sidebar to enable matching.")
     else:
         weights = FIXED_WEIGHTS
+
         st.markdown('<div class="section-label">Matching weights (fixed)</div>', unsafe_allow_html=True)
         cols = st.columns(5)
         weight_items = [
@@ -481,8 +858,16 @@ def main():
         ]
         for col, (w, name) in zip(cols, weight_items):
             with col:
-                st.markdown(f'<div class="weight-card"><div style="font-size:0.75rem;color:#4a5060;">{name}</div><div style="font-size:1.4rem;font-weight:700;">{w:.0f}%</div></div>', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="weight-card">'
+                    f'<div style="font-size:0.75rem;color:#4a5060;margin-bottom:0.25rem;">{name}</div>'
+                    f'<div style="font-size:1.4rem;font-weight:700;">{w:.0f}%</div>'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
+
         st.divider()
+
         jd_list = list(st.session_state.jd_data.keys())
         if len(jd_list) == 1:
             selected_jd = jd_list[0]
@@ -499,17 +884,19 @@ def main():
                 with col3:
                     st.markdown(f"**Qualification:** {jd_info['required_qualification']}")
                     st.markdown(f"**Target Role:** {jd_info['job_titles'][0].title() if jd_info['job_titles'] else 'Not specified'}")
-            col1, col2 = st.columns([2,1])
+
+            col1, col2 = st.columns([2, 1])
             with col1:
                 top_k = st.slider("Number of candidates:", 1, 10, 5)
             with col2:
                 min_score = st.slider("Minimum match score:", 0.0, 1.0, 0.3, 0.05)
+
             if st.button("Find Matching Candidates", type="primary", use_container_width=True):
                 with st.spinner("Calculating matches..."):
                     matches = match_resume_to_jd(selected_jd, top_k=top_k, weights=weights)
                     display_matches(matches, min_score, jd_info, weights)
         else:
-            jd_tabs = st.tabs([jd.replace('.txt','')[:25] for jd in jd_list])
+            jd_tabs = st.tabs([f"{jd.replace('.txt', '')[:25]}" for jd in jd_list])
             for idx, (jd_name, tab) in enumerate(zip(jd_list, jd_tabs)):
                 with tab:
                     jd_info = st.session_state.jd_data[jd_name]
@@ -525,12 +912,14 @@ def main():
                         with col3:
                             st.markdown(f"**Qualification:** {jd_info['required_qualification']}")
                             st.markdown(f"**Target Role:** {jd_info['job_titles'][0].title() if jd_info['job_titles'] else 'Not specified'}")
-                    col1, col2 = st.columns([2,1])
+
+                    col1, col2 = st.columns([2, 1])
                     with col1:
                         top_k = st.slider("Candidates", 1, 10, 5, key=f"topk_{idx}")
                     with col2:
                         min_score = st.slider("Min score", 0.0, 1.0, 0.3, 0.05, key=f"minscore_{idx}")
-                    if st.button(f"Find Matches — {jd_name.replace('.txt','')}", key=f"match_btn_{idx}", type="primary"):
+
+                    if st.button(f"Find Matches — {jd_name.replace('.txt', '')}", key=f"match_btn_{idx}", type="primary"):
                         with st.spinner("Calculating matches..."):
                             matches = match_resume_to_jd(jd_name, top_k=top_k, weights=weights)
                             display_matches(matches, min_score, jd_info, weights)
