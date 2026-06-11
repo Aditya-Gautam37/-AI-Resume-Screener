@@ -28,3 +28,4 @@ pytest-cov
 # Visualization (optional)
 matplotlib
 seaborn
+plotly
